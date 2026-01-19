@@ -1,9 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-
 const Footer = () => {
-  return (
-    <footer className="py-16 border-t border-border">
+  return <footer className="py-16 border-t border-border">
       <div className="container mx-auto px-6">
         {/* CTA Section */}
         <div className="text-center mb-16">
@@ -24,7 +22,8 @@ const Footer = () => {
           {/* Logo */}
           <a href="#" className="flex items-center gap-2">
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xs">L</span>
+              <span className="text-primary-foreground font-bold text-xs">
+            </span>
             </div>
             <span className="text-foreground font-medium">
               LogIQ <span className="text-muted-foreground font-normal">Transport</span>
@@ -50,8 +49,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
