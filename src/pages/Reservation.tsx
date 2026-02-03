@@ -3,7 +3,6 @@ import { format, differenceInDays, isWeekend } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { CalendarIcon, ArrowLeft, Truck, Loader2, CheckCircle } from "lucide-react";
-import emailjs from "@emailjs/browser";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const PRICES = {
   weekday: 140, // CHF/jour
@@ -31,11 +31,6 @@ const PRICES = {
   sangles: 15,
   serenite: 49,
 };
-
-// EmailJS configuration - À configurer sur https://www.emailjs.com/
-const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID"; // Remplacer par votre Service ID
-const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID"; // Remplacer par votre Template ID
-const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // Remplacer par votre Public Key
 
 const Reservation = () => {
   const { toast } = useToast();
@@ -132,35 +127,31 @@ const Reservation = () => {
       options.serenite && "Option Sérénité+ (49 CHF)",
     ].filter(Boolean).join(", ") || "Aucune";
 
-    const templateParams = {
-      // Client info
-      client_name: name,
-      client_email: email,
-      client_phone: phone,
-      // Reservation details
-      start_date: format(startDate!, "PPP", { locale: fr }),
-      start_time: startTime,
-      end_date: format(endDate!, "PPP", { locale: fr }),
-      end_time: endTime,
-      vehicle_name: selectedVehicle?.name || "",
-      vehicle_description: selectedVehicle?.description || "",
+    const requestBody = {
+      clientName: name,
+      clientEmail: email,
+      clientPhone: phone,
+      startDate: format(startDate!, "PPP", { locale: fr }),
+      startTime: startTime,
+      endDate: format(endDate!, "PPP", { locale: fr }),
+      endTime: endTime,
+      vehicleName: selectedVehicle?.name || "",
+      vehicleDescription: selectedVehicle?.description || "",
       duration: `${priceDetails.days} jour${priceDetails.days > 1 ? "s" : ""}`,
       options: optionsList,
-      total_price: `${priceDetails.total} CHF`,
-      // Price breakdown
-      weekday_count: priceDetails.weekdayCount,
-      weekend_count: priceDetails.weekendCount,
-      vehicle_total: `${priceDetails.vehicleTotal} CHF`,
-      options_total: `${priceDetails.optionsTotal} CHF`,
+      totalPrice: `${priceDetails.total} CHF`,
+      weekdayCount: priceDetails.weekdayCount,
+      weekendCount: priceDetails.weekendCount,
+      vehicleTotal: `${priceDetails.vehicleTotal} CHF`,
+      optionsTotal: `${priceDetails.optionsTotal} CHF`,
     };
 
     try {
-      await emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams,
-        EMAILJS_PUBLIC_KEY
-      );
+      const { data, error } = await supabase.functions.invoke("send-reservation-email", {
+        body: requestBody,
+      });
+
+      if (error) throw error;
 
       setIsSubmitted(true);
       toast({
