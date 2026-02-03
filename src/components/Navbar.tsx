@@ -14,13 +14,16 @@ const Navbar = () => {
   }, []);
   const navLinks = [{
     label: "Véhicules",
-    href: "#vehicules"
+    href: "/#vehicules"
   }, {
     label: "Options",
-    href: "#options"
+    href: "/#options"
+  }, {
+    label: "FAQ",
+    href: "/faq"
   }, {
     label: "À propos",
-    href: "#trust"
+    href: "/a-propos"
   }];
   return <motion.nav initial={{
     y: -100
