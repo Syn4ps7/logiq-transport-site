@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { format } from "date-fns";
+import { useState, useMemo } from "react";
+import { format, differenceInDays, isWeekend } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
 import { CalendarIcon, ArrowLeft, Truck } from "lucide-react";
@@ -20,6 +20,14 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+
+const PRICES = {
+  weekday: 140, // CHF/jour
+  weekend: 180, // CHF/jour
+  diable: 15,
+  sangles: 15,
+  serenite: 49,
+};
 
 const Reservation = () => {
   const [startDate, setStartDate] = useState<Date>();
@@ -49,6 +57,46 @@ const Reservation = () => {
   const handleOptionChange = (option: keyof typeof options) => {
     setOptions(prev => ({ ...prev, [option]: !prev[option] }));
   };
+
+  const priceDetails = useMemo(() => {
+    if (!startDate || !endDate) return null;
+
+    const days = Math.max(1, differenceInDays(endDate, startDate) + 1);
+    
+    // Calculate daily rates based on each day
+    let vehicleTotal = 0;
+    let weekdayCount = 0;
+    let weekendCount = 0;
+    
+    for (let i = 0; i < days; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      
+      if (isWeekend(currentDate)) {
+        vehicleTotal += PRICES.weekend;
+        weekendCount++;
+      } else {
+        vehicleTotal += PRICES.weekday;
+        weekdayCount++;
+      }
+    }
+
+    const optionsTotal = 
+      (options.diable ? PRICES.diable : 0) +
+      (options.sangles ? PRICES.sangles : 0) +
+      (options.serenite ? PRICES.serenite : 0);
+
+    const total = vehicleTotal + optionsTotal;
+
+    return {
+      days,
+      weekdayCount,
+      weekendCount,
+      vehicleTotal,
+      optionsTotal,
+      total,
+    };
+  }, [startDate, endDate, options]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -251,8 +299,106 @@ const Reservation = () => {
               </div>
             </div>
 
+            {/* Price Summary */}
+            {priceDetails && vehicle && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-6 rounded-lg bg-gradient-to-br from-primary/10 to-card border-2 border-primary/40"
+              >
+                <h2 className="text-lg font-semibold text-foreground mb-4">
+                  Récapitulatif
+                </h2>
+                
+                <div className="space-y-3 text-sm">
+                  {/* Duration */}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Durée</span>
+                    <span className="text-foreground font-medium">
+                      {priceDetails.days} jour{priceDetails.days > 1 ? "s" : ""}
+                    </span>
+                  </div>
+
+                  {/* Vehicle */}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Véhicule</span>
+                    <span className="text-foreground font-medium">
+                      {vehicles.find(v => v.id === vehicle)?.name}
+                    </span>
+                  </div>
+
+                  <div className="border-t border-border my-3" />
+
+                  {/* Vehicle pricing breakdown */}
+                  {priceDetails.weekdayCount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {priceDetails.weekdayCount} jour{priceDetails.weekdayCount > 1 ? "s" : ""} semaine × {PRICES.weekday} CHF
+                      </span>
+                      <span className="text-foreground">
+                        {priceDetails.weekdayCount * PRICES.weekday} CHF
+                      </span>
+                    </div>
+                  )}
+                  
+                  {priceDetails.weekendCount > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">
+                        {priceDetails.weekendCount} jour{priceDetails.weekendCount > 1 ? "s" : ""} week-end × {PRICES.weekend} CHF
+                      </span>
+                      <span className="text-foreground">
+                        {priceDetails.weekendCount * PRICES.weekend} CHF
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Options */}
+                  {options.diable && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Diable</span>
+                      <span className="text-foreground">{PRICES.diable} CHF</span>
+                    </div>
+                  )}
+                  
+                  {options.sangles && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Sangles & couvertures</span>
+                      <span className="text-foreground">{PRICES.sangles} CHF</span>
+                    </div>
+                  )}
+                  
+                  {options.serenite && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Option Sérénité+</span>
+                      <span className="text-foreground">{PRICES.serenite} CHF</span>
+                    </div>
+                  )}
+
+                  <div className="border-t border-border my-3" />
+
+                  {/* Total */}
+                  <div className="flex justify-between items-center">
+                    <span className="text-foreground font-semibold text-base">Total</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {priceDetails.total} CHF
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground mt-2">
+                    100 km inclus par jour. Km supplémentaire : 0.70 CHF
+                  </p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Submit Button */}
-            <Button variant="cta" size="lg" className="w-full">
+            <Button 
+              variant="cta" 
+              size="lg" 
+              className="w-full"
+              disabled={!startDate || !endDate || !startTime || !endTime || !vehicle}
+            >
               Continuer la réservation
             </Button>
           </div>
