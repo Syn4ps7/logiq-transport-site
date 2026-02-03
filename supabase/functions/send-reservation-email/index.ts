@@ -26,6 +26,19 @@ interface ReservationRequest {
   optionsTotal: string;
 }
 
+// Generate unique reservation reference: LQ-YYYYMMDD-XXX
+function generateReservationReference(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
+  return `LQ-${year}${month}${day}-${random}`;
+}
+
+const SENDER_NAME = "LogIQ Transport";
+const SENDER_EMAIL = "contact@logiq-transport.ch";
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -42,6 +55,10 @@ const handler = async (req: Request): Promise<Response> => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Generate unique reservation reference
+    const reservationRef = generateReservationReference();
+    console.log(`Generated reservation reference: ${reservationRef}`);
 
     // Get SMTP credentials from environment
     const smtpHost = Deno.env.get("SMTP_HOST");
@@ -94,6 +111,7 @@ const handler = async (req: Request): Promise<Response> => {
   <div class="container">
     <div class="header">
       <h1>🚚 Nouvelle Demande de Réservation</h1>
+      <p style="margin: 10px 0 0 0; font-size: 1.1em;">Référence: <strong>${reservationRef}</strong></p>
     </div>
     <div class="content">
       <div class="section">
@@ -167,6 +185,7 @@ const handler = async (req: Request): Promise<Response> => {
   <div class="container">
     <div class="header">
       <h1>🚚 Confirmation de votre demande</h1>
+      <p style="margin: 10px 0 0 0; font-size: 1.1em;">Référence: <strong>${reservationRef}</strong></p>
     </div>
     <div class="content">
       <p>Bonjour <strong>${data.clientName}</strong>,</p>
@@ -174,7 +193,8 @@ const handler = async (req: Request): Promise<Response> => {
       
       <div class="notice">
         <strong>⚠️ Demande en attente de confirmation</strong><br>
-        Cette demande est soumise à confirmation de disponibilité. Nous vous contacterons dans les plus brefs délais pour valider votre réservation.
+        Cette demande est soumise à confirmation de disponibilité. Nous vous contacterons dans les plus brefs délais pour valider votre réservation.<br>
+        <strong>Votre numéro de référence: ${reservationRef}</strong>
       </div>
       
       <div class="section">
@@ -220,20 +240,22 @@ const handler = async (req: Request): Promise<Response> => {
 </html>
     `;
 
+    const fromAddress = `${SENDER_NAME} <${smtpUser}>`;
+
     // Send email to business
     await client.send({
-      from: smtpUser,
+      from: fromAddress,
       to: smtpUser,
-      subject: `Nouvelle réservation: ${data.vehicleName} - ${data.startDate}`,
+      subject: `[${reservationRef}] Nouvelle réservation: ${data.vehicleName} - ${data.startDate}`,
       content: businessEmailHtml,
       html: businessEmailHtml,
     });
 
     // Send confirmation email to client
     await client.send({
-      from: smtpUser,
+      from: fromAddress,
       to: data.clientEmail,
-      subject: `Confirmation de votre demande de réservation - ${data.startDate}`,
+      subject: `[${reservationRef}] Confirmation de votre demande de réservation`,
       content: clientEmailHtml,
       html: clientEmailHtml,
     });
