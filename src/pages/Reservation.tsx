@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { format, differenceInDays, isWeekend } from "date-fns";
 import { fr } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { CalendarIcon, ArrowLeft, Truck } from "lucide-react";
+import { CalendarIcon, ArrowLeft, Truck, Loader2, CheckCircle } from "lucide-react";
+import emailjs from "@emailjs/browser";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,6 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 const PRICES = {
   weekday: 140, // CHF/jour
@@ -29,7 +32,13 @@ const PRICES = {
   serenite: 49,
 };
 
+// EmailJS configuration - À configurer sur https://www.emailjs.com/
+const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID"; // Remplacer par votre Service ID
+const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID"; // Remplacer par votre Template ID
+const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // Remplacer par votre Public Key
+
 const Reservation = () => {
+  const { toast } = useToast();
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [startTime, setStartTime] = useState<string>("");
@@ -40,6 +49,15 @@ const Reservation = () => {
     sangles: false,
     serenite: false,
   });
+
+  // Contact info
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+
+  // Form state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const timeSlots = [
     "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -97,6 +115,94 @@ const Reservation = () => {
       total,
     };
   }, [startDate, endDate, options]);
+
+  const isFormValid = 
+    startDate && endDate && startTime && endTime && vehicle && 
+    name.trim() && email.trim() && phone.trim();
+
+  const handleSubmit = async () => {
+    if (!isFormValid || !priceDetails) return;
+
+    setIsSubmitting(true);
+
+    const selectedVehicle = vehicles.find(v => v.id === vehicle);
+    const optionsList = [
+      options.diable && "Diable (15 CHF)",
+      options.sangles && "Sangles & couvertures (15 CHF)",
+      options.serenite && "Option Sérénité+ (49 CHF)",
+    ].filter(Boolean).join(", ") || "Aucune";
+
+    const templateParams = {
+      // Client info
+      client_name: name,
+      client_email: email,
+      client_phone: phone,
+      // Reservation details
+      start_date: format(startDate!, "PPP", { locale: fr }),
+      start_time: startTime,
+      end_date: format(endDate!, "PPP", { locale: fr }),
+      end_time: endTime,
+      vehicle_name: selectedVehicle?.name || "",
+      vehicle_description: selectedVehicle?.description || "",
+      duration: `${priceDetails.days} jour${priceDetails.days > 1 ? "s" : ""}`,
+      options: optionsList,
+      total_price: `${priceDetails.total} CHF`,
+      // Price breakdown
+      weekday_count: priceDetails.weekdayCount,
+      weekend_count: priceDetails.weekendCount,
+      vehicle_total: `${priceDetails.vehicleTotal} CHF`,
+      options_total: `${priceDetails.optionsTotal} CHF`,
+    };
+
+    try {
+      await emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams,
+        EMAILJS_PUBLIC_KEY
+      );
+
+      setIsSubmitted(true);
+      toast({
+        title: "Réservation envoyée !",
+        description: "Nous vous contacterons rapidement pour confirmer votre réservation.",
+      });
+    } catch (error) {
+      console.error("Erreur d'envoi:", error);
+      toast({
+        title: "Erreur d'envoi",
+        description: "Un problème est survenu. Veuillez réessayer ou nous contacter directement.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center p-8 max-w-md"
+        >
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Demande envoyée !
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            Merci pour votre demande de réservation. Nous vous contacterons dans les plus brefs délais pour confirmer la disponibilité et finaliser votre réservation.
+          </p>
+          <Button variant="cta" asChild>
+            <a href="/">Retour à l'accueil</a>
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -299,6 +405,47 @@ const Reservation = () => {
               </div>
             </div>
 
+            {/* Contact Information */}
+            <div className="p-6 rounded-lg bg-card border border-border">
+              <h2 className="text-lg font-semibold text-foreground mb-6">
+                Vos coordonnées
+              </h2>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nom complet *</Label>
+                  <Input
+                    id="name"
+                    placeholder="Jean Dupont"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="jean.dupont@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Téléphone *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+41 79 123 45 67"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Price Summary */}
             {priceDetails && vehicle && (
               <motion.div
@@ -397,10 +544,22 @@ const Reservation = () => {
               variant="cta" 
               size="lg" 
               className="w-full"
-              disabled={!startDate || !endDate || !startTime || !endTime || !vehicle}
+              disabled={!isFormValid || isSubmitting}
+              onClick={handleSubmit}
             >
-              Continuer la réservation
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Envoi en cours...
+                </>
+              ) : (
+                "Envoyer la demande de réservation"
+              )}
             </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              En cliquant sur ce bouton, vous acceptez d'être contacté pour finaliser votre réservation.
+            </p>
           </div>
         </motion.div>
       </main>
