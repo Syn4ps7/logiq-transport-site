@@ -104,16 +104,18 @@ const Hero = () => {
         </div>
 
         {/* Vehicle Visual */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 60
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 0.8,
-        delay: 0.6
-      }} className="mt-20 relative">
+        <motion.div 
+          id="vehicules"
+          initial={{
+          opacity: 0,
+          y: 60
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.8,
+          delay: 0.6
+        }} className="mt-20 relative scroll-mt-24">
           <div className="max-w-5xl mx-auto rounded-lg overflow-hidden relative">
             {/* Glow under vehicle */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1/3 bg-primary/10 blur-3xl" />
