@@ -14,7 +14,7 @@ const Navbar = () => {
   }, []);
   const navLinks = [{
     label: "Véhicules",
-    href: "#pricing"
+    href: "#vehicules"
   }, {
     label: "Options",
     href: "#options"
@@ -52,9 +52,11 @@ const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Button variant="cta" size="sm">
-              Réserver
-            </Button>
+            <a href="/reservation">
+              <Button variant="cta" size="sm">
+                Réserver
+              </Button>
+            </a>
           </div>
 
           {/* Mobile Menu Toggle */}
@@ -78,9 +80,11 @@ const Navbar = () => {
               {navLinks.map(link => <a key={link.label} href={link.href} className="text-muted-foreground hover:text-foreground transition-colors text-sm font-medium" onClick={() => setIsMobileMenuOpen(false)}>
                   {link.label}
                 </a>)}
-              <Button variant="cta" size="sm" className="w-full mt-2">
-                Réserver
-              </Button>
+              <a href="/reservation">
+                <Button variant="cta" size="sm" className="w-full mt-2">
+                  Réserver
+                </Button>
+              </a>
             </div>
           </motion.div>}
       </div>

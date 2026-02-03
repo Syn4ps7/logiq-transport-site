@@ -12,7 +12,7 @@ const FeaturedPack = () => {
     icon: Package,
     text: "Kit de protection (sangles & couvertures)"
   }];
-  return <section className="py-24 relative overflow-hidden">
+  return <section id="vehicules" className="py-24 relative overflow-hidden">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
 
@@ -71,9 +71,11 @@ const FeaturedPack = () => {
                     </motion.li>)}
                 </ul>
 
-                <Button variant="cta" size="lg" className="w-full md:w-auto">
-                  Ajouter à ma réservation
-                </Button>
+                <a href="/reservation">
+                  <Button variant="cta" size="lg" className="w-full md:w-auto">
+                    Ajouter à ma réservation
+                  </Button>
+                </a>
               </div>
 
               {/* Right: Social Proof */}
