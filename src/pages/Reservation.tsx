@@ -124,7 +124,7 @@ const Reservation = () => {
     const optionsList = [
       options.diable && "Diable (15 CHF)",
       options.sangles && "Sangles & couvertures (15 CHF)",
-      options.serenite && "Option Sérénité+ (49 CHF)",
+      options.serenite && "Option Sérénité+ (49 CHF/location)",
     ].filter(Boolean).join(", ") || "Aucune";
 
     const requestBody = {
@@ -390,7 +390,7 @@ const Reservation = () => {
                   />
                   <Label htmlFor="serenite" className="cursor-pointer">
                     <span className="text-foreground">Option Sérénité+</span>
-                    <span className="text-muted-foreground ml-2">— 49 CHF (franchise réduite à 500 CHF)</span>
+                    <span className="text-muted-foreground ml-2">— 49 CHF/location (franchise réduite à 500 CHF)</span>
                   </Label>
                 </div>
               </div>
