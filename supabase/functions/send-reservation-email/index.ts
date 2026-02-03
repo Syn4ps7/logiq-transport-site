@@ -70,8 +70,8 @@ const handler = async (req: Request): Promise<Response> => {
       },
     });
 
-    // Build email HTML
-    const emailHtml = `
+    // Build business email HTML
+    const businessEmailHtml = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -141,21 +141,109 @@ const handler = async (req: Request): Promise<Response> => {
 </html>
     `;
 
-    // Send email
+    // Build client confirmation email HTML
+    const clientEmailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: #f97316; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; background: #f9f9f9; }
+    .notice { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin-bottom: 20px; }
+    .notice strong { color: #b45309; }
+    .section { margin-bottom: 20px; }
+    .section h3 { color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 5px; }
+    .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
+    .label { color: #666; }
+    .value { font-weight: bold; }
+    .total { background: #f97316; color: white; padding: 15px; text-align: center; font-size: 1.3em; margin-top: 20px; }
+    .footer { text-align: center; padding: 20px; color: #666; font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚚 Confirmation de votre demande</h1>
+    </div>
+    <div class="content">
+      <p>Bonjour <strong>${data.clientName}</strong>,</p>
+      <p>Nous avons bien reçu votre demande de réservation. Merci de votre confiance !</p>
+      
+      <div class="notice">
+        <strong>⚠️ Demande en attente de confirmation</strong><br>
+        Cette demande est soumise à confirmation de disponibilité. Nous vous contacterons dans les plus brefs délais pour valider votre réservation.
+      </div>
+      
+      <div class="section">
+        <h3>📅 Récapitulatif de votre demande</h3>
+        <div class="info-row"><span class="label">Date de début:</span><span class="value">${data.startDate} à ${data.startTime}</span></div>
+        <div class="info-row"><span class="label">Date de fin:</span><span class="value">${data.endDate} à ${data.endTime}</span></div>
+        <div class="info-row"><span class="label">Durée:</span><span class="value">${data.duration}</span></div>
+      </div>
+      
+      <div class="section">
+        <h3>🚐 Véhicule demandé</h3>
+        <div class="info-row"><span class="label">Modèle:</span><span class="value">${data.vehicleName}</span></div>
+        <div class="info-row"><span class="label">Description:</span><span class="value">${data.vehicleDescription}</span></div>
+      </div>
+      
+      <div class="section">
+        <h3>⚙️ Options</h3>
+        <div class="info-row"><span class="label">Options choisies:</span><span class="value">${data.options}</span></div>
+      </div>
+      
+      <div class="section">
+        <h3>💰 Estimation tarifaire</h3>
+        <div class="info-row"><span class="label">Jours semaine (${data.weekdayCount}):</span><span class="value">${data.weekdayCount} × 140 CHF</span></div>
+        <div class="info-row"><span class="label">Jours week-end (${data.weekendCount}):</span><span class="value">${data.weekendCount} × 180 CHF</span></div>
+        <div class="info-row"><span class="label">Total véhicule:</span><span class="value">${data.vehicleTotal}</span></div>
+        <div class="info-row"><span class="label">Total options:</span><span class="value">${data.optionsTotal}</span></div>
+      </div>
+      
+      <div class="total">
+        ESTIMATION: ${data.totalPrice}
+      </div>
+      
+      <p style="margin-top: 20px; font-size: 0.9em; color: #666;">
+        <em>* Le montant final sera confirmé lors de la validation de votre réservation. 100 km inclus par jour, km supplémentaire à 0.70 CHF.</em>
+      </p>
+    </div>
+    <div class="footer">
+      <p>À bientôt !<br>L'équipe de location</p>
+      <p style="font-size: 0.8em;">Cet email est envoyé automatiquement, merci de ne pas y répondre directement.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    // Send email to business
     await client.send({
       from: smtpUser,
-      to: smtpUser, // Send to yourself (business email)
+      to: smtpUser,
       subject: `Nouvelle réservation: ${data.vehicleName} - ${data.startDate}`,
-      content: emailHtml,
-      html: emailHtml,
+      content: businessEmailHtml,
+      html: businessEmailHtml,
+    });
+
+    // Send confirmation email to client
+    await client.send({
+      from: smtpUser,
+      to: data.clientEmail,
+      subject: `Confirmation de votre demande de réservation - ${data.startDate}`,
+      content: clientEmailHtml,
+      html: clientEmailHtml,
     });
 
     await client.close();
 
-    console.log("Reservation email sent successfully");
+    console.log("Reservation emails sent successfully (business + client)");
 
     return new Response(
-      JSON.stringify({ success: true, message: "Email sent successfully" }),
+      JSON.stringify({ success: true, message: "Emails sent successfully" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
