@@ -6,8 +6,8 @@ const Options = () => {
     {
       icon: Shield,
       name: "Option Sérénité+",
-      price: "25 CHF/jour",
-      description: "La franchise passe de 2'000 à 500 CHF. La paix d'esprit pour le prix de deux cafés.",
+      price: "49 CHF/location",
+      description: "La franchise passe de 2'000 à 500 CHF. Forfait unique par location, non par jour.",
     },
     {
       icon: Users,
