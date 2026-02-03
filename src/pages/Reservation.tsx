@@ -245,7 +245,7 @@ const Reservation = () => {
                   />
                   <Label htmlFor="serenite" className="cursor-pointer">
                     <span className="text-foreground">Option Sérénité+</span>
-                    <span className="text-muted-foreground ml-2">— 25 CHF/jour (franchise réduite à 500 CHF)</span>
+                    <span className="text-muted-foreground ml-2">— 49 CHF (franchise réduite à 500 CHF)</span>
                   </Label>
                 </div>
               </div>
