@@ -74,13 +74,17 @@ const Hero = () => {
           duration: 0.6,
           delay: 0.3
         }} className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Button variant="cta" size="lg" className="group">
-              Réserver mon véhicule
-              <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground">
-              Voir les tarifs
-            </Button>
+            <a href="/reservation">
+              <Button variant="cta" size="lg" className="group">
+                Réserver mon véhicule
+                <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </a>
+            <a href="#tarifs">
+              <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground">
+                Voir les tarifs
+              </Button>
+            </a>
           </motion.div>
 
           {/* Feature Pills */}

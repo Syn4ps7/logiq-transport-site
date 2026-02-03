@@ -24,7 +24,7 @@ const PricingGrid = () => {
     features: ["200 km inclus", "Assurance standard", "Flexibilité maximale"],
     highlighted: true
   }];
-  return <section id="pricing" className="py-24 relative">
+  return <section id="tarifs" className="py-24 relative">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <motion.div initial={{
@@ -81,9 +81,11 @@ const PricingGrid = () => {
                   </li>)}
               </ul>
 
-              <Button variant={plan.highlighted ? "cta" : "outline"} className="w-full">
-                Réserver
-              </Button>
+              <a href="/reservation">
+                <Button variant={plan.highlighted ? "cta" : "outline"} className="w-full">
+                  Réserver
+                </Button>
+              </a>
             </motion.div>)}
         </div>
 
