@@ -46,10 +46,7 @@ const Hero = () => {
           duration: 0.6,
           delay: 0.1
         }} className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6">
-          Réservez votre utilitaire
-<br />
-<span className="text-gradient-accent">
-  en 60 secondes, 24h/24.
+           Réservez votre utilitaire en quelques clics, 24h/24.
 </span>
           </motion.h1>
 
@@ -63,7 +60,7 @@ const Hero = () => {
         }} transition={{
           duration: 0.6,
           delay: 0.2
-        }} className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">Louez votre utilitaire LogIQ en 60 secondes. Flotte neuve, gestion 100% digitale, standard suisse.</motion.p>
+        }} className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">Flotte neuve, gestion 100 % digitale, standard suisse.</motion.p>
 
           {/* CTA */}
           <motion.div initial={{
