@@ -11,10 +11,16 @@ const Footer = () => {
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
             Réservez votre utilitaire en quelques clics et profitez du standard suisse.
           </p>
-          <Button variant="cta" size="lg" className="group">
-            Réserver maintenant
-            <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+     <Button
+  variant="cta"
+  size="lg"
+  className="group"
+  onClick={() => window.location.href = "/reservation"}
+>
+  Réserver maintenant
+  <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+</Button>
+
         </div>
 
         {/* Footer Content */}
