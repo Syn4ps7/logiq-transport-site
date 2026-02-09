@@ -46,9 +46,11 @@ const Hero = () => {
           duration: 0.6,
           delay: 0.1
         }} className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6">
-            La mobilité pro,
-            <br />
-            <span className="text-gradient-accent">version haute précision.</span>
+          Réservez votre utilitaire
+<br />
+<span className="text-gradient-accent">
+  en 60 secondes, 24h/24.
+</span>
           </motion.h1>
 
           {/* H2 */}
