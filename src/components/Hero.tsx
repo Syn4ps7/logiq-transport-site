@@ -5,7 +5,7 @@ import heroVan from "@/assets/hero-van.jpg";
 const Hero = () => {
   const features = [{
     icon: Zap,
-    text: "Réservation 60 sec"
+    text: "Réservation instantanée"
   }, {
     icon: Clock,
     text: "Flotte 2025"
